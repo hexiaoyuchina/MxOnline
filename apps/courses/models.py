@@ -10,7 +10,7 @@ class Course(BaseModle):
     name = models.CharField(max_length=50, verbose_name='课程名')
     desc = models.CharField(max_length=300, verbose_name='课程描述')
     learn_time = models.PositiveIntegerField(default=0, verbose_name='课时长(min)')
-    degree = models.CharField(choices=(('cj', '初级'), ('zj', '中级'), ('gj', '高级')), verbose_name='难度')
+    degree = models.CharField(choices=(('cj', '初级'), ('zj', '中级'), ('gj', '高级')),max_length=4, verbose_name='难度')
     students = models.PositiveIntegerField(default=0, verbose_name='学习人数')
     fav_nums = models.PositiveIntegerField(default=0, verbose_name='收藏数')
     click_nums = models.PositiveIntegerField(default=0, verbose_name='点击数')

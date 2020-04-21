@@ -22,7 +22,7 @@ class UserProfile(AbstractUser):
             return self.nick_name
         return self.username
 class BaseModle(models.Model):
-    add_time=models.DateField(auto_now_add=True,default=datetime.now,verbose_name='创建时间')
+    add_time=models.DateField(default=datetime.now,verbose_name='创建时间')
     class Meta:#继承时不会生成表
         abstract=True
 

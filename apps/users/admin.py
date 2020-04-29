@@ -7,4 +7,4 @@ from apps.users.models import UserProfile
 class UserProFileAdmin(admin.ModelAdmin):
     pass
 
-admin.site.register(UserProfile,UserAdmin)
+# admin.site.register(UserProfile,UserAdmin)

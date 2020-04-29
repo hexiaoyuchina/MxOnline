@@ -61,6 +61,8 @@ class CourseResource(BaseModle):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程')
     file = models.FileField(upload_to='course/resource/%Y/%m', max_length=200, verbose_name='下载地址')
 
+    def __str__(self):
+        return self.name
     class Meta:
         verbose_name = '课程资源'
         verbose_name_plural = verbose_name

@@ -13,29 +13,35 @@ class UserAsk(BaseModle):
     course_name = models.CharField(max_length=50, verbose_name='课程名')
 
     def __str__(self):
-        return self.name
+        return "{name}_{course}({mobile})".format(name=self.name, course=self.course_name, mobile=self.mobile)
+
 
     class Meta:
         verbose_name = '用户咨询'
         verbose_name_plural = verbose_name
 
 
-class CoureseComment(BaseModle):
+class CourseComments(BaseModle):
     # 用户的关联使用get_user_model,不直接使用UserProfile类，因为如果后期更改，和这个相关联的字段都需要更改
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, verbose_name='用户')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程')
     comments = models.CharField(max_length=200, verbose_name='评论内容')
+    def __str__(self):
+        return self.comments
 
     class Meta:
         verbose_name = '课程评论'
         verbose_name_plural = verbose_name
 
 
-class UserFavoriate(BaseModle):
+class UserFavorite(BaseModle):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, verbose_name='用户')
     # 收藏类型不使用外键关联，使用如下类型，增加或减少字段无须修改表结构
     fav_id = models.IntegerField(verbose_name='数据id')
     fav_type = models.IntegerField(choices=((1, '课程'), (2, '课程机构'), (3, '讲师')), default=1, verbose_name='收藏类型')
+
+    def __str__(self):
+        return "{user}_{id}".format(user=self.user.username, id=self.fav_id)
 
     class Meta:
         verbose_name = '用户收藏'
@@ -47,6 +53,8 @@ class UserMessage(BaseModle):
     message = models.CharField(max_length=200, verbose_name='消息内容')
     has_read = models.BooleanField(default=False, verbose_name='消息是否已读')
 
+    def __str__(self):
+        return self.message
     class Meta:
         verbose_name = '用户消息'
         verbose_name_plural = verbose_name
@@ -56,6 +64,8 @@ class UserCourse(BaseModle):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, verbose_name='用户')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程')
 
+    def __str__(self):
+        return self.course.name
     class Meta:
         verbose_name = '用户课程'
         verbose_name_plural = verbose_name

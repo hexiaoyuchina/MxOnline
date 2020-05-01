@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.organizations.apps.OrganizationsConfig',
     'crispy_forms',
     'xadmin.apps.XAdminConfig',
+    'captcha'
 ]
 
 MIDDLEWARE = [
@@ -130,7 +131,13 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_FILES=[
-    os.path.join(BASE_DIR,'static'),
-    os.path.join(BASE_DIR,'apps/message_forms/static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
 ]
+
+#短信通知云片网相关设置apikey
+yunpian_apikey=''
+
+#redis相关配置
+REDIS_HOST='127.0.0.1'
+REDIS_PORT=6379

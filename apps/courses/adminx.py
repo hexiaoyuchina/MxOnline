@@ -1,5 +1,9 @@
 import xadmin
 from apps.courses.models import Course,Lesson,Video,CourseResource
+class GlobalSettings(object):
+    site_title='后台管理系统'#系统标题
+    site_footer='何笑语创建'#页面最后@的内容
+    # menu_style='accordion'#后台样式
 
 class CourseAdmin(object):
     list_display = ['name', 'desc','detail','degree','learn_time','students']
@@ -24,3 +28,4 @@ xadmin.site.register(Course,CourseAdmin)
 xadmin.site.register(Lesson,LessonAdmin)
 xadmin.site.register(Video,VideoAdmin)
 xadmin.site.register(CourseResource,CourseResourceAdmin)
+xadmin.site.register(xadmin.views.CommAdminView,GlobalSettings)

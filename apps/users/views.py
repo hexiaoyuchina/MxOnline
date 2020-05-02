@@ -3,13 +3,38 @@ from django.http import HttpResponseRedirect,JsonResponse
 from django.urls import reverse
 from django.views.generic.base import View
 from django.contrib.auth import authenticate,login,logout
-from apps.users.forms import LoginForm,DynamicLoginForm,DynamicLoginPostForm
+from apps.users.forms import LoginForm,DynamicLoginForm,DynamicLoginPostForm,RegisterGetForm,RegisterPostForm
 from apps.utils.YunPian import send_single_sms
 from MxOnline.settings import yunpian_apikey,REDIS_HOST,REDIS_PORT
 from apps.utils.random_str import generate_random
 from apps.users.models import UserProfile
 import redis
 # Create your views here.
+class RegisterView(View):
+    def get(self,request,*args,**kwargs):
+        register_get_form=RegisterGetForm()
+        context={'register_get_form':register_get_form}
+        return render(request,'register.html',context=context)
+
+    def post(self,request,*args,**kwargs):
+        dynamic_login = True
+        register_post_form = RegisterPostForm(request.POST)
+        if register_post_form.is_valid():
+            mobile = register_post_form.cleaned_data['mobile']
+            password = register_post_form.cleaned_data['password']
+            # 新建用户
+            user = UserProfile(username=mobile)
+            user.set_password(password)
+            user.mobile = mobile
+            user.save()
+            login(request, user)
+            return HttpResponseRedirect(reverse('index'))
+        else:
+            # 验证码错误
+            register_get_form=RegisterGetForm()
+            context={'register_get_form':register_get_form,'register_post_form':register_post_form}
+            return render(request, 'register.html', context=context)
+
 class DynamicLoginView(View):
     #手机动态登录
     def post(self,request,*args,**kwargs):

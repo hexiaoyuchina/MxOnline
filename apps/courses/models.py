@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db import models
 from apps.users.models import BaseModle
 from apps.organizations.models import Teacher
-
+from apps.organizations.models import CourseOrg
 
 # Create your models here.
 class Course(BaseModle):
@@ -18,8 +18,10 @@ class Course(BaseModle):
     tag = models.CharField(default='', max_length=10, verbose_name='课程标签')
     youneed_know = models.CharField(default='', max_length=300, verbose_name='课程须知')
     teacher=models.ForeignKey(Teacher,on_delete=models.CASCADE,verbose_name='讲师')
+    course_org=models.ForeignKey(CourseOrg,null=True,blank=True,on_delete=models.CASCADE,verbose_name='课程机构')
     teacher_tell = models.CharField(default='', max_length=300, verbose_name='老师告诉你')
     detail = models.TextField(verbose_name='副文本 ')
+    is_classic=models.BooleanField(default=False,verbose_name='是否是经典课程')
     image = models.ImageField(upload_to='courese/%Y/%m', max_length=100, verbose_name='封面图')
 
     def __str__(self):

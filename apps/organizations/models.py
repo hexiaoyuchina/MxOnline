@@ -25,7 +25,14 @@ class CourseOrg(BaseModle):
     students=models.PositiveIntegerField(default=0,verbose_name='学习人数')
     course_nums=models.PositiveIntegerField(default=0,verbose_name='课程数')
     city=models.ForeignKey(City,on_delete=models.CASCADE,verbose_name='所在城市')
-
+    is_auth=models.BooleanField(default=False,verbose_name='是否认证')
+    is_gold = models.BooleanField(default=False, verbose_name='是否金牌')
+    def courses(self):
+        # from apps.courses.models import Course
+        # Course.objects.filter(course_org=self)
+        #模型名称_set，course中定义course_org的外键，使用course_set反向取course
+        courses=self.course_set.filter(is_classic=True)[:3]
+        return courses
     def __str__(self):
         return self.name
 
@@ -43,7 +50,8 @@ class Teacher(BaseModle):
     fav_nums=models.PositiveIntegerField(default=0,verbose_name='收藏数')
     age=models.PositiveIntegerField(default=18,verbose_name='年龄')
     image=models.ImageField(upload_to='teacher/%Y/%m',max_length=100,verbose_name='头像')
-
+    def count_nums(self):
+        return self.course_set.count()
     def __str__(self):
         return self.name
 

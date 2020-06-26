@@ -14,11 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 from django.views.generic import TemplateView
+
 import xadmin
 from apps.users.views import LoginView,LogoutView,SendSmsView,DynamicLoginView,RegisterView
+from apps.organizations.views import OrgView
 from django.views.decorators.csrf import csrf_exempt
+from django.views.static import serve
+from MxOnline.settings import MEDIA_ROOT
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('xadmin/', xadmin.site.urls),
@@ -28,5 +32,13 @@ urlpatterns = [
     path('login/',LoginView.as_view(),name='login'),
     path('d_login/',DynamicLoginView.as_view(),name='d_login'),
     path('logout/',LogoutView.as_view(),name='logout'),
-    path('register/',RegisterView.as_view(),name='register')
+    path('register/',RegisterView.as_view(),name='register'),
+
+    #配置文件上传访问的url
+    re_path(r'media/(?P<path>.*$)',serve,{"document_root":MEDIA_ROOT}),
+    #课程机构
+    path('org/',include('apps.organizations.urls')),
+    #用户相关操作
+    path('op/',include('apps.operations.urls')),
+
 ]

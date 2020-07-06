@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
-from apps.operations.models import UserFavorite
-from apps.operations.forms import UserFavForm
+from apps.operations.models import UserFavorite,CourseComments
+from apps.operations.forms import UserFavForm,CommentForm
 from apps.courses.models import Course
 from apps.organizations.models import CourseOrg,Teacher
 # Create your views here.
@@ -52,3 +52,31 @@ class AddFavView(View):
             context = {'status': 'fail', 'msg': '参数错误'}
             return JsonResponse(context)
 
+class  CommentView(View):
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            context = {'status': 'fail', 'msg': '用户未登录'}
+            return JsonResponse(context)
+
+        comment_form = CommentForm(request.POST)
+
+        if comment_form.is_valid():
+            course = comment_form.cleaned_data['course']
+            comments = comment_form.cleaned_data['comments']
+
+            comment=CourseComments()
+            comment.user=request.user
+            comment.comments=comments
+
+
+
+            comment.course=course
+            comment.save()
+
+
+            context = {'status': 'success'}
+            return JsonResponse(context)
+
+        else:
+            context = {'status': 'fail', 'msg': '参数错误'}
+            return JsonResponse(context)

@@ -1,5 +1,5 @@
 from django import forms
-from apps.operations.models import UserFavorite
+from apps.operations.models import UserFavorite,CourseComments
 
 class UserFavForm(forms.ModelForm):
     class Meta:
@@ -10,3 +10,7 @@ class UserFavForm(forms.ModelForm):
 
 
 
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model=CourseComments
+        fields=['course','comments']

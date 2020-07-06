@@ -36,6 +36,16 @@ class RegisterView(View):
             return render(request, 'register.html', context=context)
 
 class DynamicLoginView(View):
+    def get(self,request,*args,**kwargs):
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('index'))
+        next = request.GET.get("next", '')
+        login_form=DynamicLoginForm()
+        context={
+            'login_form':login_form,
+            'next':next
+                 }
+        return render(request,'login.html',context=context)
     #手机动态登录
     def post(self,request,*args,**kwargs):
         dynamic_login=True
@@ -57,6 +67,9 @@ class DynamicLoginView(View):
                 user.mobile=mobile
                 user.save()
             login(request, user)
+            next = request.GET.get("next", '')
+            if next:
+                return HttpResponseRedirect(next)
             return HttpResponseRedirect(reverse('index'))
         else:
             # 验证码错误
@@ -97,8 +110,12 @@ class LoginView(View):
     def get(self,request,*args,**kwargs):
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('index'))
+        next = request.GET.get("next", '')
         login_form=DynamicLoginForm()
-        context={'login_form':login_form}
+        context={
+            'login_form':login_form,
+            'next':next
+                 }
         return render(request,'login.html',context=context)
     def post(self,request,*args,**kwargs):
         login_form=LoginForm(request.POST)
@@ -125,6 +142,9 @@ class LoginView(View):
             if user is not None:
                 #登录用户
                 login(request,user)
+                next=request.GET.get("next",'')
+                if next:
+                    return HttpResponseRedirect(next)
                 #登录成功后跳转页面
                 return HttpResponseRedirect(reverse('index'))
             else:

@@ -33,6 +33,8 @@ class CourseOrg(BaseModle):
         #模型名称_set，course中定义course_org的外键，使用course_set反向取course
         courses=self.course_set.filter(is_classic=True)[:3]
         return courses
+
+
     def __str__(self):
         return self.name
 

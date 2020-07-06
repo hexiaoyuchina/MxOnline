@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from django.views.generic.base import View
-from django.http import HttpResponseRedirect,JsonResponse
-from apps.organizations.models import CourseOrg
-from apps.organizations.models import City
-from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
+from apps.organizations.models import CourseOrg,Teacher,City
+from pure_pagination import Paginator, PageNotAnInteger
 from apps.organizations.forms import AddForm
 from apps.operations.models import UserFavorite
 class OrgHomeView(View):
@@ -148,3 +147,26 @@ class OrgView(View):
         }
         return render(request, 'org-list.html',context)
 
+class TeacherView(View):
+    def get(self, request, *args, **kwargs):
+        # 从数据库中获取数据
+
+
+        all_teachers = Teacher.objects.all()
+        teacher_nums = all_teachers.count()
+
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        # 对课程机构进行分页
+        p = Paginator(all_teachers, per_page=5, request=request)
+
+        all_teachers = p.page(page)
+        context = {
+            'all_teachers':all_teachers,
+            'teacher_nums':teacher_nums
+        }
+
+        return render(request, 'teachers-list.html', context)

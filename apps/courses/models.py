@@ -20,6 +20,7 @@ class Course(BaseModle):
     teacher=models.ForeignKey(Teacher,on_delete=models.CASCADE,verbose_name='讲师')
     course_org=models.ForeignKey(CourseOrg,null=True,blank=True,on_delete=models.CASCADE,verbose_name='课程机构')
     teacher_tell = models.CharField(default='', max_length=300, verbose_name='老师告诉你')
+    notes=models.CharField(max_length=200,default='',verbose_name="课程公告")
     detail = models.TextField(verbose_name='副文本 ')
     is_classic=models.BooleanField(default=False,verbose_name='是否是经典课程')
     image = models.ImageField(upload_to='courese/%Y/%m', max_length=100, verbose_name='封面图')
@@ -30,10 +31,21 @@ class Course(BaseModle):
     class Meta:
         verbose_name = '课程信息'
         verbose_name_plural = verbose_name
+    def lesson_nums(self):
+        return self.lesson_set.all().count()
 
+class CourseTag(BaseModle):
+    course=models.ForeignKey(Course,on_delete=models.CASCADE,verbose_name='课程')
+    tag=models.CharField(max_length=100,verbose_name='标签')
+    def __str__(self):
+        return self.tag
+
+    class Meta:
+        verbose_name = '课程标签'
+        verbose_name_plural = verbose_name
 
 class Lesson(BaseModle):
-    courese = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, verbose_name='章节名')
     learn_time = models.PositiveIntegerField(default=0, verbose_name='学习时长（分钟)')
 
@@ -60,6 +72,7 @@ class Video(BaseModle):
 
 
 class CourseResource(BaseModle):
+    name = models.CharField(max_length=100, default='',verbose_name="名称")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程')
     file = models.FileField(upload_to='course/resource/%Y/%m', max_length=200, verbose_name='下载地址')
 

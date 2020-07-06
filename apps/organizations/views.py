@@ -147,13 +147,18 @@ class OrgView(View):
         }
         return render(request, 'org-list.html',context)
 
-class TeacherView(View):
+class TeacherListView(View):
     def get(self, request, *args, **kwargs):
         # 从数据库中获取数据
 
 
         all_teachers = Teacher.objects.all()
         teacher_nums = all_teachers.count()
+        hot_teachers=Teacher.objects.all().order_by('-click_nums')[:3]
+        # 对机构进行排序
+        sort = request.GET.get('sort', '')
+        if sort == 'hot':
+            all_teachers = all_teachers.order_by('-click_nums')
 
         try:
             page = request.GET.get('page', 1)
@@ -161,12 +166,34 @@ class TeacherView(View):
             page = 1
 
         # 对课程机构进行分页
-        p = Paginator(all_teachers, per_page=5, request=request)
+        p = Paginator(all_teachers, per_page=1, request=request)
 
         all_teachers = p.page(page)
         context = {
             'all_teachers':all_teachers,
-            'teacher_nums':teacher_nums
+            'teacher_nums':teacher_nums,
+            'sort':sort,
+            'hot_teachers':hot_teachers
         }
 
         return render(request, 'teachers-list.html', context)
+
+class TeacherDetailView(View):
+    def get(self, request,teacher_id, *args, **kwargs):
+        teacher=Teacher.objects.get(id=int(teacher_id))
+        hot_teachers = Teacher.objects.all().order_by('-click_nums')[:3]
+        teacher_has_fav=False
+        org_has_fav=False
+        if request.user.is_authenticated:
+            if UserFavorite.objects.filter(user=request.user,fav_type=3,fav_id=teacher.id):
+                teacher_has_fav=True
+            if UserFavorite.objects.filter(user=request.user,fav_type=2,fav_id=teacher.org.id):
+                org_has_fav=True
+        context={
+            'teacher':teacher,
+            'teacher_has_fav':teacher_has_fav,
+            'org_has_fav':org_has_fav,
+            'hot_teachers':hot_teachers
+        }
+
+        return render(request,'teacher-detail.html',context)

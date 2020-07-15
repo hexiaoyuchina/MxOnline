@@ -17,8 +17,12 @@ class UserProfile(AbstractUser):
     class Meta:         
         verbose_name='用户信息'
         verbose_name_plural=verbose_name
+    def unread_nums(self):
+        #未读消息数量
+        return self.usermessage_set.filter(has_read=False).count()
     def __str__(self):
         if self.nick_name:
+
             return self.nick_name
         return self.username
 class BaseModle(models.Model):

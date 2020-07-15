@@ -42,5 +42,6 @@ urlpatterns = [
     path('op/',include('apps.operations.urls')),
     #课程相关
     path('course/',include('apps.courses.urls')),
+    path('users/',include('apps.users.urls')),
 
 ]

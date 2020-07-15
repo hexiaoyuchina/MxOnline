@@ -1,15 +1,205 @@
+
 from django.shortcuts import render,redirect
 from django.http import HttpResponseRedirect,JsonResponse
 from django.urls import reverse
 from django.views.generic.base import View
 from django.contrib.auth import authenticate,login,logout
-from apps.users.forms import LoginForm,DynamicLoginForm,DynamicLoginPostForm,RegisterGetForm,RegisterPostForm
+from apps.users.forms import LoginForm,DynamicLoginForm,DynamicLoginPostForm,RegisterGetForm,RegisterPostForm,ImageUploadForm,UserInfoForm,ChangePwdForm,UpdateMobileForm
 from apps.utils.YunPian import send_single_sms
 from MxOnline.settings import yunpian_apikey,REDIS_HOST,REDIS_PORT
 from apps.utils.random_str import generate_random
 from apps.users.models import UserProfile
+from apps.operations.models import UserCourse,UserFavorite,UserMessage
+from apps.organizations.models import CourseOrg,Teacher
+from apps.courses.models import Course
+from pure_pagination import Paginator, PageNotAnInteger
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 import redis
 # Create your views here.
+def message_nums(request):
+    #配置全局变量，在seetingde TEMPLATES
+    if request.user.is_authenticated:
+        return {
+            'unread_nums':request.user.usermessage_set.filter(has_read=False).count()
+        }
+    else:
+        return {}
+
+class MyMessageView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def get(self,request,*args,**kwargs):
+        messages=UserMessage.objects.filter(user=request.user)
+        current_page = 'message'
+        for mesage in messages:
+            mesage.has_read=True
+            mesage.save()
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        # 对课程机构进行分页
+        p = Paginator(messages, per_page=1, request=request)
+
+        messages = p.page(page)
+
+        context={
+            'messages':messages,
+            'current_page':current_page
+        }
+        return render(request,'usercenter-message.html',context)
+
+class MyFavCourseView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def get(self,request,*args,**kwargs):
+        cour_list =[]
+        current_page='myfavcour'
+
+        fav_cours=UserFavorite.objects.filter(user=request.user,fav_type=1)
+
+        for fav_cour in fav_cours:
+            cour=Course.objects.get(id=fav_cour.fav_id)
+            cour_list.append(cour)
+
+        context={
+            'cour_list':cour_list,
+            'current_page':current_page
+        }
+
+        return render(request,'usercenter-fav-course.html',context)
+
+class MyFavTeaView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def get(self,request,*args,**kwargs):
+        tea_list =[]
+        current_page='myfavtea'
+
+        fav_teas=UserFavorite.objects.filter(user=request.user,fav_type=3)
+
+        for fav_tea in fav_teas:
+            tea=Teacher.objects.get(id=fav_tea.fav_id)
+            tea_list.append(tea)
+
+        context={
+            'tea_list':tea_list,
+            'current_page':current_page
+        }
+
+        return render(request,'usercenter-fav-teacher.html',context)
+
+
+class MyFavOrgView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def get(self,request,*args,**kwargs):
+        org_list =[]
+
+        current_page='myfavorg'
+        fav_orgs=UserFavorite.objects.filter(user=request.user,fav_type=2)
+
+        for fav_org in fav_orgs:
+            org=CourseOrg.objects.get(id=fav_org.fav_id)
+            org_list.append(org)
+
+        context={
+            'org_list':org_list,
+            'current_page':current_page
+        }
+
+        return render(request,'usercenter-fav-org.html',context)
+
+class MyCourseView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def get(self,request,*args,**kwargs):
+        current_page='mycourse'
+        mycourses=UserCourse.objects.filter(user=request.user)
+        context={
+            'mycourses':mycourses,
+            'current_page':current_page
+        }
+        return render(request,'usercenter-mycourse.html',context)
+
+class ChangeMobileView(LoginRequiredMixin,View):
+    login_url = '/login/'
+    def post(self,request,*args,**kwargs):
+        mobile_forms=UpdateMobileForm(request.POST)
+
+        if mobile_forms.is_valid():
+            mobile=mobile_forms.cleaned_data['mobile']
+            #已经存在的数据不能重复注册
+            if UserProfile.objects.filter(mobile=mobile):
+                return JsonResponse({'mobile':'该手机手机号已被占用'})
+            user=request.user
+            user.mobile=mobile
+            user.username=mobile
+            user.save()
+            # login(request)
+            return JsonResponse({'status':'success'})
+        else:
+            return JsonResponse(mobile_forms.errors)
+
+class ChangePwdView(View):
+    def post(self,request,*args,**kwargs):
+        pwd_form=ChangePwdForm(request.POST)
+        if pwd_form.is_valid():
+            pwd1=request.POST.get('password1','')
+            # pwd2=request.POST.get('password2','')
+            # if pwd1!=pwd2:
+            #     return JsonResponse({'status':'fail','msg':'密码不一致'})
+            user=request.user
+            user.set_password(pwd1)
+            user.save()
+            #修改成功后自动登录，不跳转到登录界面
+            login(request,user)
+            return JsonResponse({'status':'success'})
+        else:
+            return JsonResponse(pwd_form.errors)
+
+class UploadImageView(LoginRequiredMixin,View):
+    # def save_file(self,file):
+    #     with open("D:/LearningCode/Django_code/MxOnline/media/head_image/uploaded.jpg",'wb') as f:
+    #         for chunk in file.chunks():
+    #             f.write(chunk)
+
+    def post(self,request,*args,**kwargs):
+        login_url = "/login/"
+        #request.POST只保存非文件类型的字段，为了传递image，加上参数request,指定哪个实例
+        img_form=ImageUploadForm(request.POST,request.FILES,instance=request.user)
+        if img_form.is_valid():
+            img_form.save()
+            return JsonResponse({
+                'status': "success"
+            })
+        else:
+            return JsonResponse({
+                'status':"fail"
+            })
+
+        #处理用户上传头像
+        # files=request.FILES['image']
+        # self.save_file(files)
+        # pass
+
+class UserInfoView(LoginRequiredMixin,View):
+    login_url = "/login/"
+    def get(self,request,*args,**kwargs):
+        captcha_form=RegisterPostForm()
+        current_page='info'
+        context={
+            'captcha_form':captcha_form,
+            'current_page':current_page
+        }
+        return render(request,'usercenter-info.html',context)
+
+    def post(self,request,*args,**kwargs):
+        user_info_form=UserInfoForm(request.POST,instance=request.user)
+        if user_info_form.is_valid():
+            user_info_form.save()
+            return JsonResponse({'status':'success'})
+        else:
+            return JsonResponse(user_info_form.errors)
+
+
 class RegisterView(View):
     def get(self,request,*args,**kwargs):
         register_get_form=RegisterGetForm()

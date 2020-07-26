@@ -4,13 +4,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.courses.models import Course,CourseTag,CourseResource,Video
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 from apps.operations.models import UserFavorite,UserCourse,CourseComments
-
+from django.db.models import Q
 # Create your views here.
 class CourseListView(View):
     def get(self,request,*args,**kwargs):
         '''获取课程列表'''
         all_courses=Course.objects.order_by('-add_time')
         hot_courses=Course.objects.order_by('-click_nums')[:3]
+        #搜索关键词
+        keywords=request.GET.get('keywords','')
+        search_type='course'
+        if keywords:
+            all_courses.filter(Q(name__icontains=keywords)|Q(desc__icontains=keywords))
         sort=request.GET.get('sort')
         if sort=='students':
             all_courses=all_courses.order_by('-students')
@@ -28,7 +33,9 @@ class CourseListView(View):
         context={
             'all_courses':all_courses,
             'sort':sort,
-            'hot_courses':hot_courses
+            'hot_courses':hot_courses,
+            'keywords':keywords,
+            'search_type':search_type
         }
         return render(request,'course-list.html',context)
 

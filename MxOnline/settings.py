@@ -23,11 +23,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'z$m1z87)vtfseb^eckbz9u6q(d68&o@)m4e$e2jn6=!ja%_f+h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+#False后，静态文件static不会自动代理
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
-
+#自定义用户认证
+AUTHENTICATION_BACKENDS=[
+    'apps.users.views.CustomAuth'
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -134,6 +138,8 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+#部署使用
+# STATIC_ROOT=os.path.join(BASE_DIR,'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]

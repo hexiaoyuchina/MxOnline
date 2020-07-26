@@ -13,10 +13,22 @@ from apps.operations.models import UserCourse,UserFavorite,UserMessage
 from apps.organizations.models import CourseOrg,Teacher
 from apps.courses.models import Course
 from pure_pagination import Paginator, PageNotAnInteger
-
+from apps.operations.models import Banner
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
 import redis
 # Create your views here.
+class CustomAuth(ModelBackend):
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        try:
+            user=UserProfile.objects.get(Q(username=username)|Q(mobile=username))
+            if user.check_password(password):
+                return user
+        except Exception as e:
+            return None
+
+
 def message_nums(request):
     #配置全局变量，在seetingde TEMPLATES
     if request.user.is_authenticated:
@@ -227,18 +239,21 @@ class RegisterView(View):
 
 class DynamicLoginView(View):
     def get(self,request,*args,**kwargs):
+        banners = Banner.objects.all()[:3]
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('index'))
         next = request.GET.get("next", '')
         login_form=DynamicLoginForm()
         context={
             'login_form':login_form,
-            'next':next
+            'next':next,
+            'banners':banners
                  }
         return render(request,'login.html',context=context)
     #手机动态登录
     def post(self,request,*args,**kwargs):
         dynamic_login=True
+        banners = Banner.objects.all()[:3]
         #验证手机号及手机验证码
         login_form=DynamicLoginPostForm(request.POST)
         if login_form.is_valid():
@@ -264,7 +279,8 @@ class DynamicLoginView(View):
         else:
             # 验证码错误
             d_form=DynamicLoginForm()
-            context = {'login_form': login_form,'dynamic_login':dynamic_login,'d_form':d_form}
+            context = {'login_form': login_form,'dynamic_login':dynamic_login,'d_form':d_form,
+            'banners':banners}
             return render(request, 'login.html', context=context)
 
 class SendSmsView(View):
@@ -300,15 +316,18 @@ class LoginView(View):
     def get(self,request,*args,**kwargs):
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse('index'))
+        banners=Banner.objects.all()[:3]
         next = request.GET.get("next", '')
         login_form=DynamicLoginForm()
         context={
             'login_form':login_form,
-            'next':next
+            'next':next,
+            'banners':banners
                  }
         return render(request,'login.html',context=context)
     def post(self,request,*args,**kwargs):
         login_form=LoginForm(request.POST)
+        banners = Banner.objects.all()[:3]
         if login_form.is_valid():
             # username=request.POST.get('username','')
             # password=request.POST.get('password','')
@@ -339,11 +358,13 @@ class LoginView(View):
                 return HttpResponseRedirect(reverse('index'))
             else:
 
-                context = {'msg': '用户名或密码错误','login_form':login_form}
+                context = {'msg': '用户名或密码错误','login_form':login_form,
+            'banners':banners}
                 return render(request, 'login.html', context=context)
         else:
             #未查询到用户
-            context={'login_form':login_form}
+            context={'login_form':login_form,
+            'banners':banners}
             return render(request,'login.html',context=context)
 
 

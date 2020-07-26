@@ -1,12 +1,28 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic.base import View
-from apps.operations.models import UserFavorite,CourseComments
+from apps.operations.models import UserFavorite,CourseComments,Banner
 from apps.operations.forms import UserFavForm,CommentForm
 from apps.courses.models import Course
 from apps.organizations.models import CourseOrg,Teacher
 # Create your views here.
+class IndexView(View):
+    def get(self,request,*args,**kwargs):
+        # from django.core.exceptions import PermissionDenied
+        # raise PermissionDenied
+        banners=Banner.objects.all().order_by('index')
+        courses=Course.objects.filter(is_banner=False)[:6]
+        banner_courses=Course.objects.filter(is_banner=True)
+        course_orgs=CourseOrg.objects.all()[:15]
+        context={
+            'banners':banners,
+            'courses':courses,
+            'banner_courses':banner_courses,
+            'course_orgs':course_orgs
+        }
+
+        return render(request,'index.html',context)
+
 class AddFavView(View):
     def post(self, request, *args, **kwargs):
         """

@@ -5,6 +5,7 @@ from apps.organizations.models import CourseOrg,Teacher,City
 from pure_pagination import Paginator, PageNotAnInteger
 from apps.organizations.forms import AddForm
 from apps.operations.models import UserFavorite
+from django.db.models import Q
 class OrgHomeView(View):
     def get(self,request,org_id,*args,**kwargs):
         current_page = 'home'
@@ -109,6 +110,12 @@ class OrgView(View):
         all_orgs=CourseOrg.objects.all()
         all_cities=City.objects.all()
         hot_orgs=all_orgs.order_by('-click_nums')[:3]
+        # 搜索关键词
+        keywords = request.GET.get('keywords', '')
+        search_type = 'org'
+        if keywords:
+            all_orgs.filter(Q(name__icontains=keywords) | Q(desc__icontains=keywords))
+
         #对课程机构筛选
         category=request.GET.get('ct','')
         if category:
@@ -144,6 +151,8 @@ class OrgView(View):
             'cityid':city_id,
             'sort':sort,
             'hot_orgs':hot_orgs,
+            'keywords':keywords,
+            'search_type':search_type
         }
         return render(request, 'org-list.html',context)
 
@@ -155,6 +164,12 @@ class TeacherListView(View):
         all_teachers = Teacher.objects.all()
         teacher_nums = all_teachers.count()
         hot_teachers=Teacher.objects.all().order_by('-click_nums')[:3]
+        # 搜索关键词
+        keywords = request.GET.get('keywords', '')
+        search_type = 'teacher'
+        if keywords:
+            all_teachers.filter(name__icontains=keywords)
+
         # 对机构进行排序
         sort = request.GET.get('sort', '')
         if sort == 'hot':
@@ -173,7 +188,9 @@ class TeacherListView(View):
             'all_teachers':all_teachers,
             'teacher_nums':teacher_nums,
             'sort':sort,
-            'hot_teachers':hot_teachers
+            'hot_teachers':hot_teachers,
+            'keywords':keywords,
+            'search_type':search_type
         }
 
         return render(request, 'teachers-list.html', context)

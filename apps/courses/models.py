@@ -9,6 +9,7 @@ from apps.organizations.models import CourseOrg
 class Course(BaseModle):
     name = models.CharField(max_length=50, verbose_name='课程名')
     desc = models.CharField(max_length=300, verbose_name='课程描述')
+
     learn_time = models.PositiveIntegerField(default=0, verbose_name='课时长(min)')
     degree = models.CharField(choices=(('cj', '初级'), ('zj', '中级'), ('gj', '高级')),max_length=4, verbose_name='难度')
     students = models.PositiveIntegerField(default=0, verbose_name='学习人数')
@@ -23,6 +24,7 @@ class Course(BaseModle):
     notes=models.CharField(max_length=200,default='',verbose_name="课程公告")
     detail = models.TextField(verbose_name='副文本 ')
     is_classic=models.BooleanField(default=False,verbose_name='是否是经典课程')
+    is_banner=models.BooleanField(default=False,verbose_name='是否是广告位')
     image = models.ImageField(upload_to='courese/%Y/%m', max_length=100, verbose_name='封面图')
 
     def __str__(self):

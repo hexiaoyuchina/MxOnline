@@ -7,6 +7,17 @@ UserProfile = get_user_model()
 
 
 # Create your models here.
+class Banner(BaseModle):
+    title=models.CharField(max_length=100,verbose_name='标题')
+    image=models.ImageField(upload_to="banner/%Y/%m",max_length=200,verbose_name='轮播图')
+    url=models.URLField(max_length=200,verbose_name='访问地址')
+    index=models.IntegerField(default=0,verbose_name='顺序')
+    class Meta:
+        verbose_name = '轮播图'
+        verbose_name_plural = verbose_name
+    def __str__(self):
+        return self.title
+
 class UserAsk(BaseModle):
     name = models.CharField(max_length=20, verbose_name='姓名')
     mobile = models.CharField(max_length=11, verbose_name='手机号')

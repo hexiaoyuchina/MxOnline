@@ -1,6 +1,8 @@
 from django.db import models
 
 from apps.users.models import BaseModle
+
+
 class City(BaseModle):
     name=models.CharField(max_length=10,verbose_name='城市名称')
     desc=models.CharField(max_length=200,verbose_name='描述')
@@ -41,7 +43,14 @@ class CourseOrg(BaseModle):
     class Meta:
         verbose_name='课程机构'
         verbose_name_plural=verbose_name
+
+#from apps.operations import models
+
+
 class Teacher(BaseModle):
+
+    #user=models.OneToOneField(UserProfile,null=True,on_delete=models.SET_NULL,verbose_name="用户")
+
     org=models.ForeignKey(CourseOrg,on_delete=models.CASCADE,verbose_name='所属机构')
     name=models.CharField(max_length=50,verbose_name='教师名')
     work_years=models.PositiveIntegerField(default=0,verbose_name='工作年限')
@@ -52,6 +61,7 @@ class Teacher(BaseModle):
     fav_nums=models.PositiveIntegerField(default=0,verbose_name='收藏数')
     age=models.PositiveIntegerField(default=18,verbose_name='年龄')
     image=models.ImageField(upload_to='teacher/%Y/%m',max_length=100,verbose_name='头像')
+
     def count_nums(self):
         return self.course_set.count()
     def __str__(self):

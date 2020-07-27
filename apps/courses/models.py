@@ -2,9 +2,8 @@ from datetime import datetime
 
 from django.db import models
 from apps.users.models import BaseModle
-from apps.organizations.models import Teacher
-from apps.organizations.models import CourseOrg
-
+from apps.organizations.models import Teacher,CourseOrg
+from DjangoUeditor.models import UEditorField
 # Create your models here.
 class Course(BaseModle):
     name = models.CharField(max_length=50, verbose_name='课程名')
@@ -22,7 +21,8 @@ class Course(BaseModle):
     course_org=models.ForeignKey(CourseOrg,null=True,blank=True,on_delete=models.CASCADE,verbose_name='课程机构')
     teacher_tell = models.CharField(default='', max_length=300, verbose_name='老师告诉你')
     notes=models.CharField(max_length=200,default='',verbose_name="课程公告")
-    detail = models.TextField(verbose_name='副文本 ')
+    detail = UEditorField(verbose_name='课程详情',width=600,height=300,imagePath="courses/ueditor/images/",
+                          filePath='courses/ueditor/files/',default="")
     is_classic=models.BooleanField(default=False,verbose_name='是否是经典课程')
     is_banner=models.BooleanField(default=False,verbose_name='是否是广告位')
     image = models.ImageField(upload_to='courese/%Y/%m', max_length=100, verbose_name='封面图')

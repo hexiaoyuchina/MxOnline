@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 from apps.users.models import BaseModle
 from apps.courses.models import Course
 
+
+
+
 UserProfile = get_user_model()
 
 

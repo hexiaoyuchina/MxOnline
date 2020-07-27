@@ -47,5 +47,8 @@ urlpatterns = [
     #课程相关
     path('course/',include('apps.courses.urls')),
     path('users/',include('apps.users.urls')),
+    #富文本
+    path('editor/',include('DjangoUeditor.urls')),
+
 
 ]
